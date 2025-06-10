@@ -1,0 +1,117 @@
+{% extends "public/base.html" %}
+
+{% block title %}{{ finding.title }} - Finding Details{% endblock %}
+
+{% block heading %}{{ finding.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Navigation breadcrumb -->
+    <div class="mb-4 text-subtle">
+        <a href="{{ url_for('public_index') }}">Projects</a> /
+        <a href="{{ url_for('public_view_project', project_id=finding.category.project.id) }}">{{ finding.category.project.name }}</a> /
+        <a href="{{ url_for('public_view_category', category_id=finding.category.id) }}">{{ finding.category.name }}</a> /
+        <span>{{ finding.title }}</span>
+    </div>
+
+    <!-- Finding details card -->
+    <div class="card severity-{{ finding.severity }} mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 style="margin-bottom: 0">{{ finding.title }}</h2>
+                <div>
+                    <!-- Severity badge -->
+                    {% if finding.severity == 'Critical' %}
+                        <span class="badge" style="background-color: rgba(255, 90, 101, 0.12); color: var(--critical);">Critical</span>
+                    {% elif finding.severity == 'High' %}
+                        <span class="badge" style="background-color: rgba(255, 159, 69, 0.12); color: var(--high);">High</span>
+                    {% elif finding.severity == 'Medium' %}
+                        <span class="badge" style="background-color: rgba(56, 203, 137, 0.12); color: var(--medium);">Medium</span>
+                    {% else %}
+                        <span class="badge badge-blue">Low</span>
+                    {% endif %}
+
+                    <!-- Status badge -->
+                    {% if finding.status == 'Open' %}
+                        <span class="badge" style="background-color: rgba(255, 90, 101, 0.12); color: var(--critical);">Open</span>
+                    {% elif finding.status == 'In Progress' %}
+                        <span class="badge" style="background-color: rgba(255, 159, 69, 0.12); color: var(--high);">In Progress</span>
+                    {% else %}
+                        <span class="badge" style="background-color: rgba(56, 203, 137, 0.12); color: var(--medium);">Closed</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Meta information -->
+            <div class="mb-4 text-subtle">
+                <strong>Created:</strong> {{ finding.created_date | format_date }}
+                {% if finding.level %}
+                <span class="ms-3"><strong>Level:</strong> {{ finding.level }}</span>
+                {% endif %}
+                <span class="ms-3"><strong>Category:</strong> {{ finding.category.name }}</span>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h5>Description</h5>
+                <div>
+                    {{ finding.description_html }}
+                </div>
+            </div>
+
+            <!-- Screenshots -->
+            {% if finding.screenshots %}
+            <div class="finding-screenshots">
+                <h5>Screenshots</h5>
+                <div class="grid">
+                    {% for screenshot in finding.screenshots %}
+                    <div class="card" style="cursor: pointer;" onclick="document.getElementById('screenshotModal{{ screenshot.id }}').style.display='block'">
+                        <img src="{{ url_for('static', filename=screenshot.file_path) }}"
+                             alt="Screenshot for {{ finding.title }}"
+                             style="width: 100%; height: 200px; object-fit: cover;">
+                        {% if screenshot.caption %}
+                        <div class="card-body" style="padding: 1rem;">
+                            <p>{{ screenshot.caption }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Modal for enlarged view -->
+                    <div id="screenshotModal{{ screenshot.id }}" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9);">
+                        <div style="margin: 2% auto; padding: 20px; width: 90%; max-width: 1200px; position: relative;">
+                            <span onclick="document.getElementById('screenshotModal{{ screenshot.id }}').style.display='none'"
+                                  style="position: absolute; top: 10px; right: 25px; color: #f1f1f1; font-size: 35px; font-weight: bold; cursor: pointer;">&times;</span>
+                            <img src="{{ url_for('static', filename=screenshot.file_path) }}"
+                                 style="width: 100%; max-height: 90vh; object-fit: contain;"
+                                 alt="Screenshot for {{ finding.title }}">
+                            {% if screenshot.caption %}
+                            <div style="padding: 10px; text-align: center; color: white;">
+                                <p>{{ screenshot.caption }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back buttons -->
+    <div class="mb-4">
+        <a href="{{ url_for('public_view_category', category_id=finding.category.id) }}" class="btn" style="border: 1px solid var(--border);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right: 0.375rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Category
+        </a>
+        <a href="{{ url_for('public_view_project', project_id=finding.category.project.id) }}" class="btn btn-primary" style="margin-left: 0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right: 0.375rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            Back to Project
+        </a>
+    </div>
+</div>
+{% endblock %}

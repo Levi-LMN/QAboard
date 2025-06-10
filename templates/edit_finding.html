@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Finding - {{ finding.title }}{% endblock %}
+
+{% block extra_head %}
+<!-- Include Quill stylesheet -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+    .quill-editor {
+        min-height: 250px;
+        background-color: white;
+        border-radius: 8px;
+    }
+    .ql-toolbar {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        background-color: #f8f9fa;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .ql-container {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .ql-editor {
+        min-height: 250px;
+        font-family: 'Inter', sans-serif;
+    }
+    .screenshot-preview {
+        max-height: 150px;
+        object-fit: contain;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+    .screenshot-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease-in-out;
+        height: 100%;
+    }
+    .screenshot-row {
+        transition: all 0.3s ease;
+    }
+    .screenshot-row:hover {
+        background-color: rgba(0,0,0,0.01);
+        border-radius: 8px;
+    }
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+    .card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        font-weight: 600;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border-color: rgba(0,0,0,0.1);
+        padding: 0.6rem 1rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.15);
+    }
+    .btn {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+    label.form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    .text-muted {
+        color: #6c757d !important;
+    }
+    .form-check-input:checked {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Projects</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('view_project', project_id=finding.category.project.id) }}">{{ finding.category.project.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('view_category', category_id=finding.category.id) }}">{{ finding.category.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('view_finding', finding_id=finding.id) }}">{{ finding.title }}</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Edit Finding</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Finding Details</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ finding.title }}" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description-container" class="form-label">Description</label>
+                    <div id="description-container" class="quill-editor"></div>
+                    <textarea name="description" id="description" style="display:none;">{{ finding.description }}</textarea>
+                    <small class="text-muted">You can use formatting, lists, and add images using the rich text editor.</small>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label for="severity" class="form-label">Severity</label>
+                        <select class="form-select" id="severity" name="severity" required>
+                            <option value="Critical" {% if finding.severity == 'Critical' %}selected{% endif %}>Critical</option>
+                            <option value="High" {% if finding.severity == 'High' %}selected{% endif %}>High</option>
+                            <option value="Medium" {% if finding.severity == 'Medium' %}selected{% endif %}>Medium</option>
+                            <option value="Low" {% if finding.severity == 'Low' %}selected{% endif %}>Low</option>
+                            <option value="Info" {% if finding.severity == 'Info' %}selected{% endif %}>Info</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="level" class="form-label">Level</label>
+                        <input type="text" class="form-control" id="level" name="level" value="{{ finding.level }}" placeholder="e.g., System, Application, Network">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Open" {% if finding.status == 'Open' %}selected{% endif %}>Open</option>
+                            <option value="In Progress" {% if finding.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Closed" {% if finding.status == 'Closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="category_id" class="form-label">Category</label>
+                    <select class="form-select" id="category_id" name="category_id">
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id == finding.category_id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if finding.screenshots %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Existing Screenshots</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for screenshot in finding.screenshots %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="screenshot-card">
+                                    <div class="card-body">
+                                        <img src="{{ url_for('static', filename=screenshot.file_path) }}" class="screenshot-preview mb-3 d-block mx-auto" alt="Screenshot">
+                                        <input type="hidden" name="existing_screenshot_id" value="{{ screenshot.id }}">
+                                        <div class="mb-3">
+                                            <label class="form-label">Caption</label>
+                                            <input type="text" class="form-control" name="existing_caption" value="{{ screenshot.caption }}" placeholder="Caption">
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="delete_screenshot" value="{{ screenshot.id }}" id="delete-screenshot-{{ screenshot.id }}">
+                                            <label class="form-check-label text-danger" for="delete-screenshot-{{ screenshot.id }}">
+                                                Delete this screenshot
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Add New Screenshots</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="new-screenshot-container">
+                            <div class="screenshot-row p-3 mb-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Image</label>
+                                        <input type="file" class="form-control" name="new_screenshots" accept="image/*">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Caption</label>
+                                        <input type="text" class="form-control" name="new_captions" placeholder="Caption (optional)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary mt-2" id="add-screenshot">
+                            <i class="bi bi-plus-circle"></i> Add Another Screenshot
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('view_finding', finding_id=finding.id) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="bi bi-check-circle"></i> Update Finding
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Include Quill library -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill editor with existing content
+        var quill = new Quill('#description-container', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'indent': '-1' }, { 'indent': '+1' }],
+                    ['link', 'image', 'code'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Set the editor content to the existing description
+        const description = document.getElementById('description').value;
+        if (description) {
+            quill.root.innerHTML = description;
+        }
+
+        // Update hidden form value before submitting
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('description').value = quill.root.innerHTML;
+        });
+
+        // Handle adding multiple screenshot inputs
+        document.getElementById('add-screenshot').addEventListener('click', function() {
+            const container = document.getElementById('new-screenshot-container');
+            const newRow = document.createElement('div');
+            newRow.className = 'screenshot-row p-3 mb-3';
+            newRow.innerHTML = `
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">Image</label>
+                        <input type="file" class="form-control" name="new_screenshots" accept="image/*">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Caption</label>
+                        <input type="text" class="form-control" name="new_captions" placeholder="Caption (optional)">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-outline-danger form-control remove-screenshot">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newRow);
+
+            // Add event listener to remove button
+            newRow.querySelector('.remove-screenshot').addEventListener('click', function() {
+                newRow.style.opacity = '0';
+                setTimeout(() => {
+                    container.removeChild(newRow);
+                }, 300);
+            });
+        });
+    });
+</script>
+{% endblock %}

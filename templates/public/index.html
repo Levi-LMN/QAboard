@@ -1,0 +1,45 @@
+{# public/index.html #}
+{% extends 'public/base.html' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block heading %}Projects{% endblock %}
+
+{% block content %}
+<p class="text-subtle">Browse all quality assurance projects</p>
+
+{% if projects %}
+    <div class="grid">
+        {% for project in projects %}
+            <div class="card">
+                <div class="card-body">
+                    <h5>{{ project.name }}</h5>
+                    <p class="text-subtle">{{ project.description|truncate(100) }}</p>
+                    <div class="meta-info">
+                        <span class="text-subtle">{{ project.created_date|format_date }}</span>
+                        <span class="badge badge-blue">{{ project.categories|length }} Categories</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('public_view_project', project_id=project.id) }}" class="btn btn-primary">
+                        View Details
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+        </div>
+        <h5>No Projects Available</h5>
+        <p class="text-subtle">There are no projects to display at this time.</p>
+    </div>
+{% endif %}
+{% endblock %}

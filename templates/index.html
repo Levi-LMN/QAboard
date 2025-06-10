@@ -1,0 +1,379 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --success-color: #4cc9f0;
+        --danger-color: #f72585;
+        --warning-color: #f8961e;
+        --info-color: #4895ef;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --gray-color: #6c757d;
+    }
+
+    body {
+        background-color: #f5f7fa;
+        font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 0.5rem 1.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-sm {
+        border-radius: 6px;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-success {
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+    }
+
+    .btn-info {
+        background-color: var(--info-color);
+        border-color: var(--info-color);
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.85em;
+        border-radius: 6px;
+    }
+
+    .bg-info {
+        background-color: var(--info-color) !important;
+    }
+
+    .bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+
+    .project-card {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .project-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 6px;
+        background: linear-gradient(to bottom, var(--primary-color), var(--info-color));
+        border-radius: 12px 0 0 12px;
+    }
+
+    .card-title {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .quick-actions {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(67, 97, 238, 0.2);
+    }
+
+    .quick-actions .card-title {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .action-btn {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: var(--dark-color);
+        border: none;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn:hover {
+        background-color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 1.5rem 1.5rem 0.5rem;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding: 0.5rem 1.5rem 1.5rem;
+    }
+
+    .dropdown-menu {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
+    }
+
+    .dropdown-item {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        margin: 0.2rem 0;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f0f4ff;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .stats-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        background-color: rgba(0, 0, 0, 0.04);
+        color: var(--gray-color);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .card-footer {
+        background-color: transparent;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.25rem;
+    }
+
+    .avatar-text {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        background-color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="fw-bold">Projects Dashboard</h2>
+    <a href="{{ url_for('new_project') }}" class="btn btn-primary d-flex align-items-center gap-2">
+        <i class="bi bi-plus-lg"></i> New Project
+    </a>
+</div>
+
+<!-- Quick Action Card -->
+<div class="quick-actions">
+    <h5 class="card-title"><i class="bi bi-lightning-charge-fill"></i> Quick Actions</h5>
+    <div class="d-flex flex-wrap gap-3">
+        <a href="{{ url_for('new_project') }}" class="action-btn d-flex align-items-center gap-2">
+            <i class="bi bi-folder-plus"></i> New Project
+        </a>
+
+        <!-- Quick add category dropdown -->
+        <div class="dropdown">
+            <button class="action-btn dropdown-toggle d-flex align-items-center gap-2" type="button" id="addCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-collection"></i> Add Category
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="addCategoryDropdown">
+                {% if projects %}
+                    {% for project in projects %}
+                        <li><a class="dropdown-item" href="{{ url_for('new_category', project_id=project.id) }}">To "{{ project.name }}"</a></li>
+                    {% endfor %}
+                {% else %}
+                    <li><span class="dropdown-item disabled">No projects available</span></li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Quick add finding dropdown -->
+        <div class="dropdown">
+            <button class="action-btn dropdown-toggle d-flex align-items-center gap-2" type="button" id="addFindingDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-file-earmark-text"></i> Add Finding
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="addFindingDropdown" style="max-height: 300px; overflow-y: auto;">
+                {% set has_categories = false %}
+                {% for project in projects %}
+                    {% if project.categories %}
+                        {% set has_categories = true %}
+                        <li><h6 class="dropdown-header fw-bold">{{ project.name }}</h6></li>
+                        {% for category in project.categories %}
+                            <li><a class="dropdown-item" href="{{ url_for('new_finding', category_id=category.id) }}">In "{{ category.name }}"</a></li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                    {% endif %}
+                {% endfor %}
+                {% if not has_categories %}
+                    <li><span class="dropdown-item disabled">No categories available</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="fw-bold mb-0">Your Projects</h4>
+            <div class="d-flex gap-2">
+                <span class="stats-badge">
+                    <i class="bi bi-grid-3x3-gap"></i> {{ projects|length }} Projects
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if projects %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for project in projects %}
+            <div class="col">
+                <div class="card project-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-text me-3">{{ project.name[0] }}</div>
+                            <h5 class="card-title mb-0">{{ project.name }}</h5>
+                        </div>
+
+                        <p class="card-text text-muted">{{ project.description }}</p>
+
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span class="badge bg-info">
+                                <i class="bi bi-collection me-1"></i> {{ project.categories|length }} Categories
+                            </span>
+                            <span class="badge bg-secondary">
+                                {% set finding_count = namespace(value=0) %}
+                                {% for category in project.categories %}
+                                    {% set finding_count.value = finding_count.value + category.findings|length %}
+                                {% endfor %}
+                                <i class="bi bi-file-earmark-text me-1"></i> {{ finding_count.value }} Findings
+                            </span>
+                        </div>
+
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar3"></i> Created {{ project.created_date.strftime('%b %d, %Y') }}
+                            </small>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <a href="{{ url_for('view_project', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal{{ project.id }}">
+                                    Delete
+                                </button>
+                            </div>
+                            <!-- Quick add dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="quickAddDropdown{{ project.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-plus-lg"></i> Add
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickAddDropdown{{ project.id }}">
+                                    <li><a class="dropdown-item" href="{{ url_for('new_category', project_id=project.id) }}">
+                                        <i class="bi bi-collection me-2"></i> New Category
+                                    </a></li>
+                                    {% if project.categories %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header fw-bold">Add Finding to:</h6></li>
+                                        {% for category in project.categories %}
+                                            <li><a class="dropdown-item" href="{{ url_for('new_finding', category_id=category.id) }}">
+                                                <i class="bi bi-file-earmark-plus me-2"></i> {{ category.name }}
+                                            </a></li>
+                                        {% endfor %}
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Project Modal -->
+            <div class="modal fade" id="deleteProjectModal{{ project.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">Delete Project</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <p class="text-center">Are you sure you want to delete the project <strong>"{{ project.name }}"</strong>?</p>
+                            <p class="text-center text-danger small">This action cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('delete_project', project_id=project.id) }}" method="post">
+                                <button type="submit" class="btn btn-danger">Delete Project</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <img src="{{ url_for('static', filename='images/empty-state.svg') }}" alt="No projects" style="width: 150px; height: auto; margin-bottom: 2rem;" onerror="this.style.display='none'">
+            <h4 class="fw-bold">No Projects Yet</h4>
+            <p class="text-muted mb-4">You haven't created any projects yet. Get started by creating your first project.</p>
+            <a href="{{ url_for('new_project') }}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-plus-lg me-2"></i> Create Your First Project
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

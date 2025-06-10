@@ -1,0 +1,708 @@
+<!-- templates/view_project.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block heading %}{{ project.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .project-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .project-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        transform: rotate(45deg);
+    }
+
+    .project-header .content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .project-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .project-meta {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+    }
+
+    .project-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        opacity: 0.95;
+    }
+
+    .project-actions .btn {
+        border-radius: 25px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .project-actions .btn:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        color: white;
+        border-color: rgba(255,255,255,0.5);
+    }
+
+    .add-category-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        height: 100%;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .add-category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .add-category-card:hover::before {
+        opacity: 1;
+    }
+
+    .add-category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+
+    .add-category-card .card-body {
+        position: relative;
+        z-index: 2;
+        background: none;
+        border: none;
+    }
+
+    .add-category-card .btn {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        border-radius: 25px;
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .add-category-card .btn:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        transform: scale(1.05);
+        color: white;
+    }
+
+    .section-title {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title::after {
+        content: '';
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(to right, #667eea, transparent);
+        margin-left: 1rem;
+    }
+
+    .category-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+        overflow: hidden;
+        background: white;
+    }
+
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .category-card .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.5rem;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .category-card .card-header h5 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .category-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .category-card .card-footer {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-top: 1px solid #e9ecef;
+        padding: 1.25rem 1.5rem;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .severity-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .severity-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .severity-badge.critical {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+    }
+
+    .severity-badge.high {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+    }
+
+    .severity-badge.medium {
+        background: linear-gradient(135deg, #f1c40f, #f39c12);
+        color: white;
+    }
+
+    .severity-badge.low {
+        background: linear-gradient(135deg, #27ae60, #229954);
+        color: white;
+    }
+
+    .findings-preview {
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 10px;
+        background: #f8f9fa;
+        padding: 0.5rem;
+    }
+
+    .finding-item {
+        background: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .finding-item:hover {
+        background: #667eea;
+        color: white;
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        text-decoration: none;
+    }
+
+    .finding-item .severity-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .finding-item .severity-indicator.critical {
+        background: #e74c3c;
+    }
+
+    .finding-item .severity-indicator.high {
+        background: #f39c12;
+    }
+
+    .finding-item .severity-indicator.medium {
+        background: #f1c40f;
+    }
+
+    .finding-item .severity-indicator.low {
+        background: #27ae60;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h5 {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn {
+        border-radius: 12px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: transparent;
+    }
+
+    .btn-outline-primary:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-danger {
+        border: 2px solid #e74c3c;
+        color: #e74c3c;
+        background: transparent;
+    }
+
+    .btn-outline-danger:hover {
+        background: #e74c3c;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem;
+    }
+
+    .modal-header .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+
+    .modal-header .btn-close:hover {
+        opacity: 1;
+    }
+
+    .modal-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .modal-footer {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .count-badge {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .more-findings {
+        text-align: center;
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 8px;
+        color: #667eea;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .project-title {
+            font-size: 2rem;
+        }
+
+        .project-header {
+            padding: 1.5rem;
+        }
+
+        .category-card {
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Project Header -->
+<div class="project-header">
+    <div class="content">
+        <h1 class="project-title">{{ project.name }}</h1>
+        <div class="project-meta">
+            <i class="bi bi-calendar3 me-2"></i>Created: {{ project.created_date.strftime('%B %d, %Y') }}
+        </div>
+        <div class="project-description">{{ project.description }}</div>
+        <div class="project-actions">
+            <a href="{{ url_for('export_project', project_id=project.id) }}" class="btn">
+                <i class="bi bi-file-earmark-arrow-down"></i> Export Project
+            </a>
+            <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn">
+                <i class="bi bi-pencil"></i> Edit Project
+            </a>
+            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
+                <i class="bi bi-trash"></i> Delete Project
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Category Section -->
+<div class="row mb-5">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="section-title">
+                <i class="bi bi-collection"></i>
+                Project Categories
+            </h2>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="add-category-card card">
+            <div class="card-body">
+                <div class="text-center">
+                    <i class="bi bi-plus-circle-fill mb-3" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title mb-3">Add New Category</h5>
+                    <p class="card-text mb-4">Organize your findings by creating categories</p>
+                    <a href="{{ url_for('new_category', project_id=project.id) }}" class="btn">
+                        <i class="bi bi-plus-circle"></i> Create Category
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Section -->
+{% if project.categories %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for category in project.categories %}
+            <div class="col">
+                <div class="category-card card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ category.name }}</h5>
+                        <span class="count-badge">{{ category.findings|length }}</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Findings Summary -->
+                        {% if category.findings %}
+                            <div class="mb-3">
+                                <div class="severity-badges mb-3">
+                                    {% set critical = category.findings|selectattr('severity', 'equalto', 'Critical')|list|length %}
+                                    {% set high = category.findings|selectattr('severity', 'equalto', 'High')|list|length %}
+                                    {% set medium = category.findings|selectattr('severity', 'equalto', 'Medium')|list|length %}
+                                    {% set low = category.findings|selectattr('severity', 'equalto', 'Low')|list|length %}
+
+                                    {% if critical > 0 %}
+                                    <span class="severity-badge critical">{{ critical }} Critical</span>
+                                    {% endif %}
+                                    {% if high > 0 %}
+                                    <span class="severity-badge high">{{ high }} High</span>
+                                    {% endif %}
+                                    {% if medium > 0 %}
+                                    <span class="severity-badge medium">{{ medium }} Medium</span>
+                                    {% endif %}
+                                    {% if low > 0 %}
+                                    <span class="severity-badge low">{{ low }} Low</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Preview of findings -->
+                                <div class="findings-preview">
+                                    {% for finding in category.findings[:4] %}
+                                        <a href="{{ url_for('view_finding', finding_id=finding.id) }}" class="finding-item">
+                                            <div class="d-flex align-items-center">
+                                                <span class="severity-indicator {{ finding.severity.lower() }}"></span>
+                                                <div class="text-truncate flex-grow-1">{{ finding.title }}</div>
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+
+                                    {% if category.findings|length > 4 %}
+                                        <div class="more-findings">
+                                            <i class="bi bi-plus-circle me-1"></i>
+                                            {{ category.findings|length - 4 }} more findings
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <h6>No findings yet</h6>
+                                <p class="text-muted small">Start by adding your first finding</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('view_category', category_id=category.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="{{ url_for('edit_category', category_id=category.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal{{ category.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <a href="{{ url_for('new_finding', category_id=category.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add Finding
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Category Modal -->
+            <div class="modal fade" id="deleteCategoryModal{{ category.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Delete Category
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the category <strong>"{{ category.name }}"</strong>?</p>
+                            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>
+                                    This will permanently delete all <strong>{{ category.findings|length }}</strong> findings in this category. This action cannot be undone.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('delete_category', category_id=category.id) }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Delete Category
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card category-card">
+                <div class="card-body">
+                    <div class="empty-state">
+                        <i class="bi bi-collection-fill"></i>
+                        <h4>No categories found</h4>
+                        <p class="text-muted">Start organizing your findings by creating your first category</p>
+                        <a href="{{ url_for('new_category', project_id=project.id) }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Create Your First Category
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Delete Project Modal -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Delete Project
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the project <strong>"{{ project.name }}"</strong>?</p>
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                        This will permanently delete all categories and findings in this project. This action cannot be undone.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('delete_project', project_id=project.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Project
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add loading states to buttons
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
+
+                    // Re-enable after 5 seconds as fallback
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }, 5000);
+                }
+            });
+        });
+
+        // Add hover effects to cards
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

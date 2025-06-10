@@ -1,0 +1,75 @@
+{# public/search_results.html #}
+{% extends 'public/base.html' %}
+
+{% block title %}Search Results - QA Tool Public View{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Search Results for "{{ query }}"</h1>
+        <p class="lead">Found {{ projects|length + categories|length + findings|length }} results</p>
+    </div>
+</div>
+
+{% if projects %}
+    <div class="mb-5">
+        <h2>Projects</h2>
+        <div class="list-group">
+            {% for project in projects %}
+                <a href="{{ url_for('public_view_project', project_id=project.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ project.name }}</h5>
+                        <small>{{ project.created_date|format_date }}</small>
+                    </div>
+                    <p class="mb-1">{{ project.description|truncate(150) }}</p>
+                    <small>{{ project.categories|length }} categories</small>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{% if categories %}
+    <div class="mb-5">
+        <h2>Categories</h2>
+        <div class="list-group">
+            {% for category in categories %}
+                <a href="{{ url_for('public_view_category', category_id=category.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ category.name }}</h5>
+                    </div>
+                    <p class="mb-1">Project: {{ category.project.name }}</p>
+                    <small>{{ category.findings|length }} findings</small>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{% if findings %}
+    <div class="mb-5">
+        <h2>Findings</h2>
+        <div class="list-group">
+            {% for finding in findings %}
+                <a href="{{ url_for('public_view_finding', finding_id=finding.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ finding.title }}</h5>
+                        <div>
+                            <span class="badge severity-{{ finding.severity|lower }} me-2">{{ finding.severity }}</span>
+                            <span class="badge status-{{ finding.status|lower|replace(' ', '-') }}">{{ finding.status }}</span>
+                        </div>
+                    </div>
+                    <p class="mb-1">{{ finding.description|truncate(150) }}</p>
+                    <small>Category: {{ finding.category.name }} | Project: {{ finding.category.project.name }}</small>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{% if not projects and not categories and not findings %}
+    <div class="alert alert-info">
+        No results found for "{{ query }}". Please try a different search term.
+    </div>
+{% endif %}
+{% endblock %}

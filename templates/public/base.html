@@ -1,0 +1,853 @@
+<!-- templates/public/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} | QA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.min.css">
+    <style>
+        :root {
+            --bg: #f8f8f8;
+            --text: #232323;
+            --subtle: #787878;
+            --accent: #3C50E0;
+            --accent-light: #eef0ff;
+            --border: #e0e0e0;
+            --card: #ffffff;
+            --critical: #FF5A65;
+            --high: #FF9F45;
+            --medium: #38CB89;
+            --low: #4A6CF7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            letter-spacing: -0.01em;
+            font-size: 16px;
+            font-weight: 400;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
+
+        h5 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+
+        .text-subtle {
+            color: var(--subtle);
+        }
+
+        /* Layout */
+        .site-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--card);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-area {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 3rem 4rem;
+        }
+
+        /* Components */
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            padding: 0 2rem 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .nav-link svg {
+            margin-right: 0.75rem;
+            height: 20px;
+            width: 20px;
+        }
+
+        .search-container {
+            padding: 0 2rem;
+            margin-top: auto;
+            margin-bottom: 2rem;
+        }
+
+        .search-form {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-light);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--subtle);
+            height: 16px;
+            width: 16px;
+        }
+
+        .view-mode {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 99px;
+            border: 1px solid var(--accent-light);
+            color: var(--accent);
+            background-color: var(--accent-light);
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 1rem;
+        }
+
+        .view-mode svg {
+            height: 14px;
+            width: 14px;
+            margin-right: 0.25rem;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            height: 100%;
+            border: 1px solid var(--border);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            background-color: var(--card);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-blue {
+            color: var(--low);
+            background-color: rgba(74, 108, 247, 0.12);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3445c0;
+            color: white;
+        }
+
+        .btn svg {
+            height: 16px;
+            width: 16px;
+            margin-left: 0.375rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Severity styles */
+        .severity-Critical {
+            border-left: 3px solid var(--critical);
+        }
+
+        .severity-High {
+            border-left: 3px solid var(--high);
+        }
+
+        .severity-Medium {
+            border-left: 3px solid var(--medium);
+        }
+
+        .severity-Low {
+            border-left: 3px solid var(--low);
+        }
+
+        /* Flash messages */
+        .flash-messages {
+            margin-bottom: 2rem;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: rgba(56, 203, 137, 0.1);
+            border-color: var(--medium);
+        }
+
+        .alert-danger {
+            background-color: rgba(255, 90, 101, 0.1);
+            border-color: var(--critical);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 159, 69, 0.1);
+            border-color: var(--high);
+        }
+
+        .alert-info {
+            background-color: rgba(74, 108, 247, 0.1);
+            border-color: var(--low);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--subtle);
+            margin-bottom: 1rem;
+        }
+
+        /* Media queries */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                padding: 1.5rem 0;
+            }
+
+            .logo {
+                padding: 0 0 1.5rem;
+                margin: 0 1rem 1.5rem;
+                text-align: center;
+            }
+
+            .logo span {
+                display: none;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link svg {
+                margin-right: 0;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .content-area {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .site-wrapper {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 1rem 0;
+            }
+
+            .nav-list {
+                display: flex;
+                padding: 0 1rem;
+                overflow-x: auto;
+                justify-content: space-between;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+                margin-right: 0.5rem;
+            }
+
+            .logo {
+                display: none;
+            }
+
+            .nav-link {
+                padding: 0.5rem;
+                border-radius: 6px;
+            }
+
+            .content-area {
+                margin-left: 0;
+                width: 100%;
+                padding: 1.5rem;
+            }
+        }
+
+        /* Nested navigation styles with improved hierarchy */
+.nav-sublist {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    overflow: hidden;
+}
+
+/* Left border to show hierarchy */
+.nav-subitem {
+    margin-bottom: 0.25rem;
+    position: relative;
+    padding-left: 1.5rem;
+    border-left: 2px solid transparent;
+}
+
+.nav-subitem:hover {
+    border-left-color: var(--border);
+}
+
+.nav-subitem.active {
+    border-left-color: var(--accent);
+}
+
+.nav-sublink {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.2s ease;
+}
+
+.nav-sublink:hover, .nav-sublink.active {
+    background-color: var(--accent-light);
+    color: var(--accent);
+}
+
+.nav-sublink svg {
+    margin-right: 0.5rem;
+    height: 16px;
+    width: 16px;
+    flex-shrink: 0;
+}
+
+/* Further indentation for findings */
+.nav-findings-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.nav-finding-item {
+    margin-bottom: 0.25rem;
+    position: relative;
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--border);
+}
+
+.nav-finding-item:hover {
+    border-left-color: var(--subtle);
+}
+
+.nav-finding-item.active {
+    border-left-color: var(--accent);
+}
+
+.nav-finding-link {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 400;
+    color: var(--subtle);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-finding-link:hover, .nav-finding-link.active {
+    background-color: var(--accent-light);
+    color: var(--accent);
+}
+
+.nav-finding-link svg {
+    margin-right: 0.375rem;
+    height: 14px;
+    width: 14px;
+    flex-shrink: 0;
+}
+
+/* Visual connectors to show hierarchy */
+.nav-item.has-children > a::after {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-left: auto;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.2s ease;
+}
+
+.nav-item.has-children.expanded > a::after {
+    transform: rotate(180deg);
+}
+
+.nav-subitem.has-children > a::after {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-left: auto;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.2s ease;
+}
+
+.nav-subitem.has-children.expanded > a::after {
+    transform: rotate(180deg);
+}
+
+/* Tree-line indicators */
+.nav-subitem::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 18px;
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-subitem:last-child::before {
+    height: 18px;
+    border-bottom: none;
+}
+
+.nav-finding-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 18px;
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-finding-item:last-child::before {
+    height: 18px;
+    border-bottom: none;
+}
+
+/* Responsive adjustments for nested navigation */
+@media (max-width: 992px) {
+    .nav-sublink span, .nav-finding-link span {
+        display: none;
+    }
+
+    .nav-subitem, .nav-finding-item {
+        padding-left: 0.75rem;
+    }
+
+    .nav-subitem::before, .nav-finding-item::before {
+        width: 5px;
+    }
+
+    .nav-sublink svg, .nav-finding-link svg {
+        margin-right: 0;
+    }
+
+    .nav-item.has-children > a::after,
+    .nav-subitem.has-children > a::after {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .nav-sublist, .nav-findings-list {
+        display: none;
+    }
+
+    .nav-list {
+        flex-wrap: nowrap;
+    }
+
+    .nav-item.has-children > a::after {
+        display: none;
+    }
+
+    .nav-subitem, .nav-finding-item {
+        border-left: none;
+    }
+
+    .nav-subitem::before, .nav-finding-item::before {
+        display: none;
+    }
+}
+
+/* Active path styling */
+.nav-item.active-path,
+.nav-subitem.active-path {
+    border-left-color: var(--accent);
+}
+
+.nav-item.active-path > a,
+.nav-subitem.active-path > a {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+/* Animation styles for expanding/collapsing sections */
+.nav-sublist, .nav-findings-list {
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+    overflow: hidden;
+}
+
+.nav-item.expanded > .nav-sublist,
+.nav-subitem.expanded > .nav-findings-list {
+    max-height: 1000px; /* Large enough value to accommodate all content */
+    transition: max-height 0.5s ease-in;
+}
+
+/* Ensure active paths start expanded */
+.active-path > .nav-sublist,
+.active-path > .nav-findings-list {
+    max-height: 1000px;
+}
+
+/* Additional visual hierarchy indicators */
+.nav-item > .nav-link {
+    font-weight: 600;
+}
+
+.nav-subitem > .nav-sublink {
+    font-weight: 500;
+}
+
+.nav-finding-item > .nav-finding-link {
+    font-weight: 400;
+}
+
+/* Indentation line styles */
+.nav-item.has-children.active-path {
+    border-left: 2px solid var(--accent);
+}
+
+.nav-subitem {
+    margin-left: 1rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--border);
+}
+
+.nav-subitem.active-path {
+    border-left: 2px solid var(--accent);
+}
+
+.nav-finding-item {
+    margin-left: 1.5rem;
+    padding-left: 0.5rem;
+    border-left: 1px dotted var(--border);
+}
+
+.nav-finding-item.active-path {
+    border-left: 1px solid var(--accent);
+}
+    </style>
+</head>
+<body>
+    <div class="site-wrapper">
+        <!-- Modified sidebar for base.html -->
+<!-- Modified sidebar for base.html with hierarchical structure -->
+<aside class="sidebar">
+    <div class="logo">
+        QA<span>lytics</span>
+    </div>
+    <ul class="nav-list">
+        <li class="nav-item {% if request.path == url_for('public_index') %}active{% endif %}">
+            <a href="{{ url_for('public_index') }}" class="nav-link {% if request.path == url_for('public_index') %}active{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>All Projects</span>
+            </a>
+        </li>
+
+        <!-- Dynamic project navigation -->
+        {% if project is defined %}
+        <li class="nav-item has-children active-path expanded">
+            <a href="{{ url_for('public_view_project', project_id=project.id) }}" class="nav-link {% if request.path == url_for('public_view_project', project_id=project.id) and category is not defined %}active{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>{{ project.name }}</span>
+            </a>
+
+            <!-- Show categories if we're in a project -->
+            <ul class="nav-sublist">
+                {% for cat in project.categories %}
+                <li class="nav-subitem {% if category is defined and category.id == cat.id %}active-path has-children expanded{% endif %}">
+                    <a href="{{ url_for('public_view_category', category_id=cat.id) }}" class="nav-sublink {% if category is defined and category.id == cat.id and finding is not defined %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        <span>{{ cat.name }}</span>
+                    </a>
+
+                    <!-- Show findings if we're in a category -->
+                    {% if category is defined and category.id == cat.id %}
+                    <ul class="nav-findings-list">
+                        {% for f in category.findings %}
+                        <li class="nav-finding-item {% if finding is defined and finding.id == f.id %}active-path{% endif %}">
+                            <a href="{{ url_for('public_view_finding', finding_id=f.id) }}" class="nav-finding-link {% if finding is defined and finding.id == f.id %}active{% endif %}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>{{ f.title }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+{#        <li class="nav-item">#}
+{#            <a href="{{ url_for('index') }}" class="nav-link">#}
+{#                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">#}
+{#                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />#}
+{#                </svg>#}
+{#                <span>Admin</span>#}
+{#            </a>#}
+{#        </li>#}
+    </ul>
+
+    <div class="search-container">
+        <form class="search-form" action="{{ url_for('public_search') }}" method="get">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input class="search-input" type="search" name="q" placeholder="Search..." aria-label="Search">
+        </form>
+    </div>
+</aside>
+        <main class="content-area">
+            <div class="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="page-header">
+                <h1>{% block heading %}{% endblock %}
+                    <span class="view-mode">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View Only
+                    </span>
+                </h1>
+            </div>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        // Add this to your base.html in a script block at the end
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize expandable menu items
+    const expandableItems = document.querySelectorAll('.nav-item.has-children > a, .nav-subitem.has-children > a');
+
+    expandableItems.forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            // Only toggle if clicking on the arrow or directly on the item itself, not on the link text
+            if (e.target === item || e.target.classList.contains('nav-link') || e.target.classList.contains('nav-sublink') ||
+                e.target.tagName === 'svg' || e.target.tagName === 'path') {
+                e.preventDefault();
+                const parent = item.parentElement;
+                parent.classList.toggle('expanded');
+
+                // Find the directly nested sublist
+                const sublist = parent.querySelector(':scope > .nav-sublist, :scope > .nav-findings-list');
+                if (sublist) {
+                    if (parent.classList.contains('expanded')) {
+                        sublist.style.maxHeight = sublist.scrollHeight + 'px';
+                    } else {
+                        sublist.style.maxHeight = '0';
+                    }
+                }
+            }
+        });
+    });
+
+    // Initialize any active paths to be expanded
+    const activePaths = document.querySelectorAll('.active-path');
+    activePaths.forEach(function(path) {
+        // Find and expand all parent sublists
+        const sublists = path.querySelectorAll('.nav-sublist, .nav-findings-list');
+        sublists.forEach(function(sublist) {
+            sublist.style.maxHeight = sublist.scrollHeight + 'px';
+        });
+
+        // Also check for parent lists
+        let parent = path.parentElement;
+        while (parent) {
+            if (parent.classList.contains('nav-sublist') || parent.classList.contains('nav-findings-list')) {
+                parent.style.maxHeight = parent.scrollHeight + 'px';
+                // Also mark the parent's parent as expanded
+                if (parent.parentElement) {
+                    parent.parentElement.classList.add('expanded');
+                }
+            }
+            parent = parent.parentElement;
+        }
+    });
+});
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

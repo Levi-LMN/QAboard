@@ -1,0 +1,669 @@
+{% extends 'public/base.html' %}
+
+{% block title %}{{ category.name }} - {{ category.project.name }}{% endblock %}
+
+{% block heading %}{{ category.name }}{% endblock %}
+
+{% block content %}
+    <!-- Header Section with Breadcrumb and Back Button -->
+    <div class="header-section">
+        <nav class="breadcrumb">
+            <a href="{{ url_for('public_index') }}">Home</a> /
+            <a href="{{ url_for('public_view_project', project_id=category.project.id) }}">{{ category.project.name }}</a> /
+            <span class="text-subtle">{{ category.name }}</span>
+        </nav>
+
+        <a href="{{ url_for('public_view_project', project_id=category.project.id) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span class="btn-text">Back to Project</span>
+        </a>
+    </div>
+
+    <!-- Content Section - Compact layout -->
+    <div class="content-container">
+        <!-- Category Info Card -->
+        <div class="info-card">
+            <div class="info-title">Category Information</div>
+            <div class="info-data">
+                <div class="info-row">
+                    <div class="info-label">Project:</div>
+                    <div class="info-value">{{ category.project.name }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Findings:</div>
+                    <div class="info-value">{{ category.findings|length }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Findings Section -->
+        <div class="section-header">
+            <h5>Findings</h5>
+        </div>
+
+        {% if category.findings %}
+            <div class="findings-grid">
+                {% for finding in category.findings %}
+                    <div class="finding-card severity-{{ finding.severity }}" data-finding-id="{{ finding.id }}">
+                        <div class="finding-body">
+                            <h5 class="finding-title">{{ finding.title }}</h5>
+                            <div class="finding-badges">
+                                <span class="badge badge-blue">{{ finding.severity }}</span>
+                                <span class="badge badge-blue">{{ finding.status }}</span>
+                            </div>
+                            {% if finding.description %}
+                                <p class="finding-desc">{{ finding.description|striptags }}</p>
+                            {% else %}
+                                <p class="text-subtle finding-no-desc">No description provided</p>
+                            {% endif %}
+
+                            {% if finding.screenshots %}
+                                <div class="finding-meta">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>{{ finding.screenshots|length }} screenshot(s)</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="finding-footer">
+                            <span class="text-subtle">{{ finding.created_date|format_date }}</span>
+                            <button class="btn btn-primary view-finding-btn" data-finding-id="{{ finding.id }}">
+                                <span>View Details</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="48" height="48">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <p>No findings in this category.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Finding Detail Modal -->
+    <div id="findingModal" class="modal">
+        <div id="modalContent" class="modal-content">
+            <div class="modal-header">
+                <h5 id="findingModalLabel">Finding Details</h5>
+                <button id="closeModalBtn" class="modal-close-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="findingModalBody" class="modal-body">
+                <div class="loading-indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24" class="spinner">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <p>Loading...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModalBtnFooter" class="btn btn-secondary">Close</button>
+                <a href="#" id="viewFullFindingBtn" class="btn btn-primary">View Full Finding</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates for modal content -->
+    <template id="findingDetailTemplate">
+        <div class="finding-detail">
+            <div class="finding-header">
+                <div class="finding-title-area">
+                    <h5 class="finding-title"></h5>
+                    <div class="finding-badges">
+                        <span class="badge badge-blue finding-severity"></span>
+                        <span class="badge badge-blue finding-status"></span>
+                    </div>
+                </div>
+
+                <p class="finding-meta">
+                    Created: <span class="finding-date"></span>
+                </p>
+
+                <div class="finding-level-container">
+                    <strong>Level:</strong> <span class="finding-level"></span>
+                </div>
+            </div>
+
+            <div class="finding-desc-section">
+                <h5>Description</h5>
+                <div class="finding-description"></div>
+            </div>
+
+            <div class="screenshots-container">
+                <h5>Screenshots</h5>
+                <div class="screenshots-gallery"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="screenshotTemplate">
+        <div class="screenshot-card">
+            <img src="" class="screenshot-img" alt="Screenshot">
+            <div class="screenshot-caption"></div>
+        </div>
+    </template>
+
+    <template id="noScreenshotsTemplate">
+        <div class="no-screenshots-message">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            No screenshots available for this finding.
+        </div>
+    </template>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Making cards clickable for opening modal
+    const cards = document.querySelectorAll('.finding-card');
+    cards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't trigger if clicking on a button
+            if (!e.target.closest('.btn')) {
+                const findingId = this.getAttribute('data-finding-id');
+                loadFindingDetails(findingId);
+            }
+        });
+    });
+
+    // Handle finding card button click to show modal
+    const viewButtons = document.querySelectorAll('.view-finding-btn');
+    const findingModal = document.getElementById('findingModal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeModalBtnFooter = document.getElementById('closeModalBtnFooter');
+    const modalBody = document.getElementById('findingModalBody');
+    const viewFullFindingBtn = document.getElementById('viewFullFindingBtn');
+
+    // Add click event to all view buttons
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click event
+            const findingId = this.getAttribute('data-finding-id');
+            loadFindingDetails(findingId);
+        });
+    });
+
+    // Close modal buttons
+    closeModalBtn.addEventListener('click', function() {
+        findingModal.style.display = 'none';
+    });
+
+    closeModalBtnFooter.addEventListener('click', function() {
+        findingModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside the modal content
+    findingModal.addEventListener('click', function(event) {
+        if (event.target === findingModal) {
+            findingModal.style.display = 'none';
+        }
+    });
+
+    // Prevent modal content clicks from closing the modal
+    modalContent.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+
+    // Add keydown event to close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && findingModal.style.display === 'block') {
+            findingModal.style.display = 'none';
+        }
+    });
+
+    function loadFindingDetails(findingId) {
+        // Show loading spinner
+        modalBody.innerHTML = `
+            <div class="loading-indicator">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24" class="spinner">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <p>Loading...</p>
+            </div>
+        `;
+
+        // Update the "View Full Finding" link
+        viewFullFindingBtn.href = `/public/finding/${findingId}`;
+
+        // Show the modal
+        findingModal.style.display = 'block';
+
+        // Fetch finding details
+        fetch(`/public/api/finding/${findingId}`)
+            .then(response => response.json())
+            .then(finding => {
+                displayFindingInModal(finding);
+            })
+            .catch(error => {
+                modalBody.innerHTML = `
+                    <div class="error-message">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Error loading finding details.
+                    </div>
+                `;
+                console.error('Error loading finding details:', error);
+            });
+    }
+
+    function displayFindingInModal(finding) {
+        // Clone the template
+        const template = document.getElementById('findingDetailTemplate');
+        const content = template.content.cloneNode(true);
+
+        // Populate the template with finding data
+        content.querySelector('.finding-title').textContent = finding.title;
+
+        // Add severity and status badges
+        const severityBadge = content.querySelector('.finding-severity');
+        severityBadge.textContent = finding.severity;
+
+        const statusBadge = content.querySelector('.finding-status');
+        statusBadge.textContent = finding.status;
+
+        content.querySelector('.finding-date').textContent = finding.created_date;
+
+        // Handle level (show/hide based on existence)
+        const levelContainer = content.querySelector('.finding-level-container');
+        if (finding.level) {
+            content.querySelector('.finding-level').textContent = finding.level;
+            levelContainer.style.display = 'block';
+        } else {
+            levelContainer.style.display = 'none';
+        }
+
+        // Handle description (HTML content)
+        content.querySelector('.finding-description').innerHTML = finding.description || 'No description provided';
+
+        // Handle screenshots
+        const screenshotsContainer = content.querySelector('.screenshots-gallery');
+
+        if (finding.screenshots && finding.screenshots.length > 0) {
+            finding.screenshots.forEach(screenshot => {
+                const screenshotTemplate = document.getElementById('screenshotTemplate');
+                const screenshotElement = screenshotTemplate.content.cloneNode(true);
+
+                screenshotElement.querySelector('.screenshot-img').src = `/static/${screenshot.file_path}`;
+                screenshotElement.querySelector('.screenshot-caption').textContent = screenshot.caption || '';
+
+                screenshotsContainer.appendChild(screenshotElement);
+            });
+        } else {
+            const noScreenshotsTemplate = document.getElementById('noScreenshotsTemplate');
+            screenshotsContainer.appendChild(noScreenshotsTemplate.content.cloneNode(true));
+        }
+
+        // Clear and append the new content
+        modalBody.innerHTML = '';
+        modalBody.appendChild(content);
+    }
+});
+</script>
+
+<style>
+    /* Layout improvements */
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb {
+        margin: 0;
+    }
+
+    .content-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Category Info Card - Compact and better structured */
+    .info-card {
+        background-color: var(--card);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    .info-title {
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background-color: var(--bg);
+    }
+
+    .info-data {
+        padding: 1rem 1.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-label {
+        font-weight: 600;
+        width: 100px;
+    }
+
+    /* Section header */
+    .section-header {
+        margin-bottom: 1rem;
+    }
+
+    .section-header h5 {
+        margin: 0;
+    }
+
+    /* Finding cards */
+    .findings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .finding-card {
+        background-color: var(--card);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        cursor: pointer;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .finding-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .finding-body {
+        padding: 1.25rem;
+        flex: 1;
+    }
+
+    .finding-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .finding-badges {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .finding-desc {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 0.75rem;
+        color: var(--text);
+        font-size: 0.95rem;
+    }
+
+    .finding-no-desc {
+        margin-bottom: 0.75rem;
+    }
+
+    .finding-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--subtle);
+    }
+
+    .finding-footer {
+        padding: 0.75rem 1.25rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background-color: var(--card);
+        margin: 0;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        width: 70%;
+        max-width: 800px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h5 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        display: flex;
+        color: var(--subtle);
+        transition: color 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+        color: var(--text);
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn-secondary {
+        background-color: var(--bg);
+        color: var(--text);
+    }
+
+    /* Finding details in modal */
+    .finding-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .finding-title-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+    .finding-meta {
+        color: var(--subtle);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .finding-level-container {
+        padding: 0.5rem 0.75rem;
+        background-color: var(--bg);
+        border-radius: 6px;
+        display: inline-block;
+        font-size: 0.9rem;
+    }
+
+    .finding-desc-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .finding-description {
+        padding: 1rem;
+        background-color: var(--bg);
+        border-radius: 8px;
+    }
+
+    .screenshots-container h5 {
+        margin-bottom: 1rem;
+    }
+
+    .screenshots-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .screenshot-card {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: var(--bg);
+    }
+
+    .screenshot-img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .screenshot-caption {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .no-screenshots-message {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background-color: var(--accent-light);
+        color: var(--accent);
+        border-radius: 8px;
+    }
+
+    /* Loading indicator */
+    .loading-indicator {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Error message */
+    .error-message {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background-color: rgba(255, 90, 101, 0.1);
+        color: var(--critical);
+        border-radius: 8px;
+        border-left: 4px solid var(--critical);
+    }
+
+    /* Severity indicators */
+    .severity-Critical {
+        border-left: 3px solid var(--critical);
+    }
+
+    .severity-High {
+        border-left: 3px solid var(--high);
+    }
+
+    .severity-Medium {
+        border-left: 3px solid var(--medium);
+    }
+
+    .severity-Low {
+        border-left: 3px solid var(--low);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .header-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .btn-text {
+            display: none;
+        }
+
+        .modal-content {
+            width: 90%;
+        }
+
+        .findings-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

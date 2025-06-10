@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sibasi QA Tool - Quality Assurance Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --light-bg: #f8fafc;
+            --dark-text: #1e293b;
+            --light-text: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+
+        .header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo-image {
+            height: 40px;
+            width: 40px;
+            background-color: var(--primary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-text);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stats-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            grid-column: span 3;
+        }
+
+        .stats-title {
+            font-size: 1rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stats-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .stats-trend.positive {
+            color: var(--success);
+        }
+
+        .stats-trend.negative {
+            color: var(--danger);
+        }
+
+        .chart-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            grid-column: span 8;
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 85%;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+        }
+
+        .table-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            grid-column: span 12;
+            margin-top: 1rem;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+        }
+
+        .table-filter {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-passed {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-failed {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            background-color: var(--primary);
+            color: var(--light-text);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .action-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--secondary);
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-image">SL</div>
+            <div>Sibasi QA Tool</div>
+        </div>
+        <nav class="nav">
+            <a href="#" class="nav-item active">Dashboard</a>
+            <a href="#" class="nav-item">Test Cases</a>
+            <a href="#" class="nav-item">Test Plans</a>
+            <a href="#" class="nav-item">Bugs</a>
+            <a href="#" class="nav-item">Reports</a>
+            <a href="#" class="nav-item">Settings</a>
+        </nav>
+        <div class="user-menu">
+            <div class="nav-item">Notifications</div>
+            <div class="user-avatar">JS</div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1 class="page-title">Quality Assurance Dashboard</h1>
+
+        <div class="dashboard">
+            <div class="stats-card">
+                <div class="stats-title">Total Test Cases</div>
+                <div class="stats-value">248</div>
+                <div class="stats-trend positive">
+                    <span>↑ 12% from last week</span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Passed Tests</div>
+                <div class="stats-value">189</div>
+                <div class="stats-trend positive">
+                    <span>↑ 8% from last week</span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Failed Tests</div>
+                <div class="stats-value">36</div>
+                <div class="stats-trend negative">
+                    <span>↑ 5% from last week</span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Bug Resolution Rate</div>
+                <div class="stats-value">78%</div>
+                <div class="stats-trend positive">
+                    <span>↑ 3% from last week</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Test Execution Trends</div>
+                <div class="chart-placeholder">
+                    [Test execution trend visualization would appear here]
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Open Bugs</div>
+                <div class="stats-value">42</div>
+                <div class="stats-trend negative">
+                    <span>↑ 7% from last week</span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Code Coverage</div>
+                <div class="stats-value">76%</div>
+                <div class="stats-trend positive">
+                    <span>↑ 2% from last week</span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Sprint Progress</div>
+                <div class="stats-value">65%</div>
+                <div class="stats-trend positive">
+                    <span>On track</span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Release Readiness</div>
+                <div class="stats-value">82%</div>
+                <div class="stats-trend positive">
+                    <span>↑ 5% from last week</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Recent Test Executions</div>
+                    <div class="table-filter">
+                        <select class="filter-select">
+                            <option>All Projects</option>
+                            <option>E-commerce Platform</option>
+                            <option>Mobile App</option>
+                            <option>API Gateway</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                            <option>This sprint</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Test Name</th>
+                            <th>Project</th>
+                            <th>Executed By</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>TC-1024</td>
+                            <td>User Authentication Flow</td>
+                            <td>E-commerce Platform</td>
+                            <td>Anna Roberts</td>
+                            <td>Apr 24, 2025</td>
+                            <td><span class="status-badge status-passed">Passed</span></td>
+                            <td><button class="action-button">View Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>TC-1032</td>
+                            <td>Payment Processing</td>
+                            <td>E-commerce Platform</td>
+                            <td>John Smith</td>
+                            <td>Apr 23, 2025</td>
+                            <td><span class="status-badge status-failed">Failed</span></td>
+                            <td><button class="action-button">View Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>TC-987</td>
+                            <td>Product Search Functionality</td>
+                            <td>Mobile App</td>
+                            <td>Ella Johnson</td>
+                            <td>Apr 23, 2025</td>
+                            <td><span class="status-badge status-passed">Passed</span></td>
+                            <td><button class="action-button">View Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>TC-1056</td>
+                            <td>Order Checkout Process</td>
+                            <td>E-commerce Platform</td>
+                            <td>Michael Chen</td>
+                            <td>Apr 22, 2025</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td><button class="action-button">View Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>TC-1012</td>
+                            <td>API Rate Limiting Test</td>
+                            <td>API Gateway</td>
+                            <td>Sarah Williams</td>
+                            <td>Apr 22, 2025</td>
+                            <td><span class="status-badge status-passed">Passed</span></td>
+                            <td><button class="action-button">View Details</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div>© 2025 Sibasi Ltd. All rights reserved.</div>
+        <div>Quality Assurance Tool v2.4.1</div>
+    </footer>
+</body>
+</html>

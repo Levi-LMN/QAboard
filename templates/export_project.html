@@ -1,0 +1,112 @@
+<!-- templates/export_project.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Export Project: {{ project.name }}</h3>
+        </div>
+        <div class="card-body">
+            <p>You can download this project report in different formats:</p>
+
+            <!-- Download Options -->
+<div class="download-section">
+    <h3>Download Report</h3>
+    <div class="download-buttons">
+        <a href="{{ url_for('download_project', project_id=project.id, filter_type='all') }}"
+           class="btn btn-primary btn-lg">
+            📄 Download All Issues
+        </a>
+        <a href="{{ url_for('download_project', project_id=project.id, filter_type='open') }}"
+           class="btn btn-warning btn-lg">
+            📋 Download Open Issues Only
+        </a>
+    </div>
+</div>
+
+<style>
+.download-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.download-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-warning {
+    background: #ed8936;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #dd6b20;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .download-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle"></i> The PDF will include all project details, categories, findings, and screenshots.
+            </div>
+
+            <a href="{{ url_for('view_project', project_id=project.id) }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,491 @@
+{# public/view_project.html #}
+{% extends 'public/base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block heading %}{{ project.name }}{% endblock %}
+
+{% block content %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<div class="project-path">
+    <a href="{{ url_for('public_index') }}">Projects</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+    </svg>
+    <span>{{ project.name }}</span>
+</div>
+
+<p class="project-description text-subtle">{{ project.description }}</p>
+
+<div class="content-layout">
+    <!-- Categories Sidebar -->
+    <div class="categories-sidebar">
+        <h3 class="sidebar-heading">Categories</h3>
+        <div class="category-menu">
+            <a href="{{ url_for('public_view_project', project_id=project.id) }}"
+               class="category-link {% if not selected_category_id %}active{% endif %}">
+                <div class="category-name">All Findings</div>
+                <div class="category-count">{{ all_findings_count }}</div>
+            </a>
+            {% for category in project.categories %}
+                <a href="{{ url_for('public_view_project', project_id=project.id, category_id=category.id) }}"
+                   class="category-link {% if selected_category_id == category.id %}active{% endif %}">
+                    <div class="category-name">{{ category.name }}</div>
+                    <div class="category-count">{{ category.findings|length }}</div>
+                </a>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('public_download_project', project_id=project.id) }}" class="download-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Download Report</span>
+        </a>
+    </div>
+
+    <!-- Findings Content -->
+    <div class="findings-content">
+        <div class="findings-header">
+            <h2>
+                {% if selected_category %}
+                    {{ selected_category.name }}
+                {% else %}
+                    All Findings
+                {% endif %}
+            </h2>
+            <div class="count-badge">{{ findings|length }} items</div>
+        </div>
+
+        {% if findings %}
+            <div class="findings-table">
+                <div class="table-header">
+                    <div class="col-title">Title</div>
+                    <div class="col-category">Category</div>
+                    <div class="col-severity">Severity</div>
+                    <div class="col-status">Status</div>
+                    <div class="col-date">Created</div>
+                    <div class="col-actions">Actions</div>
+                </div>
+
+                {% for finding in findings %}
+                    <div class="table-row severity-{{ finding.severity }}">
+                        <div class="col-title">{{ finding.title }}</div>
+                        <div class="col-category">{{ finding.category.name }}</div>
+                        <div class="col-severity">
+                            <span class="severity-badge severity-{{ finding.severity }}">
+                                {{ finding.severity }}
+                            </span>
+                        </div>
+                        <div class="col-status">
+                            <select class="status-select" data-finding-id="{{ finding.id }}" data-original-status="{{ finding.status }}">
+                                <option value="Open" {% if finding.status == 'Open' %}selected{% endif %}>Open</option>
+                                <option value="In Progress" {% if finding.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Closed" {% if finding.status == 'Closed' %}selected{% endif %}>Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-date">{{ finding.created_date|format_date }}</div>
+                        <div class="col-actions">
+                            <button onclick="showFindingModal({{ finding.id }})" class="view-btn">
+                                View
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if pagination.page > 1 %}
+                            <a class="page-item" href="{{ url_for('public_view_project', project_id=project.id, category_id=selected_category_id, page=pagination.page-1) }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span class="page-item disabled">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </span>
+                        {% endif %}
+
+                        {% for page_num in range(1, pagination.pages + 1) %}
+                            <a class="page-item {% if page_num == pagination.page %}active{% endif %}"
+                               href="{{ url_for('public_view_project', project_id=project.id, category_id=selected_category_id, page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        {% endfor %}
+
+                        {% if pagination.page < pagination.pages %}
+                            <a class="page-item" href="{{ url_for('public_view_project', project_id=project.id, category_id=selected_category_id, page=pagination.page+1) }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span class="page-item disabled">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h5>No Findings Available</h5>
+                <p class="text-subtle">There are no findings to display for this selection.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal for viewing finding details -->
+<div id="findingModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Finding Details</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="finding-modal-header">
+                <div class="finding-title-area">
+                    <h2 id="finding-title"></h2>
+                    <div class="finding-metadata">
+                        <span id="finding-category" class="category-tag"></span>
+                        <span id="finding-severity" class="severity-badge"></span>
+                        <span id="finding-status" class="status-badge"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="finding-section">
+                <h4>Description</h4>
+                <div id="finding-description" class="finding-description-content"></div>
+            </div>
+
+            <div id="screenshots-section" class="finding-section">
+                <h4>Screenshots</h4>
+                <div id="screenshots-container" class="screenshots-container"></div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="view-full-page" href="#" class="btn-primary">View Full Page</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- JavaScript for Modal Functionality -->
+<script>
+// Modal elements
+let modal;
+let closeBtn;
+let currentFindingId = null;
+
+// Initialize once the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    modal = document.getElementById("findingModal");
+    closeBtn = modal ? modal.querySelector(".close") : document.getElementsByClassName("close")[0];
+
+    // Set up event listeners for the close button
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            if (modal) modal.style.display = "none";
+        };
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+
+    // Add event listeners to all status selects in the table
+    const statusSelects = document.querySelectorAll('.status-select');
+    statusSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const findingId = this.getAttribute('data-finding-id');
+            const newStatus = this.value;
+            updateFindingStatus(findingId, newStatus, select);
+        });
+    });
+
+    // Add event listener to modal status select
+    const modalStatusSelect = document.getElementById('finding-status-select');
+    if (modalStatusSelect) {
+        modalStatusSelect.addEventListener('change', function() {
+            const newStatus = this.value;
+            updateFindingStatus(currentFindingId, newStatus, modalStatusSelect);
+        });
+    }
+});
+
+/**
+ * Safely gets an element and performs an action if the element exists
+ * @param {string} id - Element ID
+ * @param {function} action - Callback function to execute with the element
+ * @returns {boolean} - Whether the action was performed
+ */
+function safelyGetElement(id, action) {
+    const element = document.getElementById(id);
+    if (element && action) {
+        action(element);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Loads finding data into modal and displays it
+ * @param {number} findingId - The ID of the finding to display
+ */
+function showFindingModal(findingId) {
+    currentFindingId = findingId;
+
+    // Check if modal exists before proceeding
+    if (!modal) {
+        console.error("Modal element not found");
+        showToast('Error: Modal element not found on page', 'error');
+        return;
+    }
+
+    // Show loading state
+    modal.style.display = "block";
+
+    // Set loading state on title if it exists
+    safelyGetElement("finding-title", el => el.textContent = "Loading...");
+
+    // Fetch finding data from API
+    fetch(`/public/api/finding/${findingId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(finding => {
+            // Populate modal with finding data
+            safelyGetElement("finding-title", el => el.textContent = finding.title);
+            safelyGetElement("finding-category", el => el.textContent = finding.category_name || "Unknown Category");
+            safelyGetElement("finding-created-date", el => el.textContent = finding.created_date);
+
+            // Set severity badge
+            safelyGetElement("finding-severity", el => {
+                el.textContent = finding.severity;
+                el.className = "severity-badge severity-" + finding.severity.toLowerCase();
+            });
+
+            // Set status badge
+            safelyGetElement("finding-status", el => {
+                el.textContent = finding.status;
+                el.className = "status-badge status-" + finding.status.toLowerCase();
+            });
+
+            // Set the selected status in the dropdown if it exists
+            safelyGetElement("finding-status-select", el => {
+                el.value = finding.status;
+                el.setAttribute('data-original-status', finding.status);
+            });
+
+            // Set description (using innerHTML to render HTML content)
+            safelyGetElement("finding-description", el => {
+                el.innerHTML = finding.description_html || finding.description;
+            });
+
+            // Handle screenshots
+            const screenshotsContainer = document.getElementById("screenshots-container");
+            const screenshotsSection = document.getElementById("screenshots-section");
+
+            if (screenshotsContainer) {
+                screenshotsContainer.innerHTML = '';
+
+                if (finding.screenshots && finding.screenshots.length > 0) {
+                    if (screenshotsSection) {
+                        screenshotsSection.style.display = "block";
+                    }
+
+                    finding.screenshots.forEach(screenshot => {
+                        const screenshotItem = document.createElement("div");
+                        screenshotItem.className = "screenshot-item";
+
+                        // Create image container
+                        const imageContainer = document.createElement("div");
+                        imageContainer.className = "screenshot-image";
+
+                        // Create image
+                        const img = document.createElement("img");
+                        img.src = "/static/" + screenshot.file_path;
+                        img.alt = screenshot.caption || "Screenshot";
+                        img.loading = "lazy"; // Lazy load images
+                        imageContainer.appendChild(img);
+                        screenshotItem.appendChild(imageContainer);
+
+                        // Add caption if available
+                        if (screenshot.caption) {
+                            const caption = document.createElement("div");
+                            caption.className = "screenshot-caption";
+                            caption.textContent = screenshot.caption;
+                            screenshotItem.appendChild(caption);
+                        }
+
+                        screenshotsContainer.appendChild(screenshotItem);
+                    });
+                } else if (screenshotsSection) {
+                    screenshotsSection.style.display = "none";
+                }
+            }
+
+            // Set link to full page
+            safelyGetElement("view-full-page", el => {
+                el.href = `/public/finding/${findingId}`;
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching finding data:", error);
+
+            safelyGetElement("finding-title", el => {
+                el.textContent = "Error Loading Data";
+            });
+
+            safelyGetElement("finding-description", el => {
+                el.innerHTML =
+                    `<p>Unable to load finding details. Please try again later.</p>
+                    <p>Error: ${error.message}</p>`;
+            });
+
+            showToast('Error loading finding details', 'error');
+        });
+}
+
+/**
+ * Updates the finding status via API
+ * @param {number} findingId - The ID of the finding to update
+ * @param {string} newStatus - The new status value
+ * @param {HTMLElement} selectElement - The select element that triggered the update
+ */
+function updateFindingStatus(findingId, newStatus, selectElement) {
+    if (!selectElement) {
+        console.error("Status select element is null");
+        showToast('Error: Status select element not found', 'error');
+        return;
+    }
+
+    // Show loading state
+    selectElement.disabled = true;
+
+    // Send request to update status
+    fetch(`/public/api/update_status/${findingId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: newStatus }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Update the UI to reflect the change
+            selectElement.setAttribute('data-original-status', newStatus);
+
+            // If this was from the modal, update the table view as well
+            if (selectElement.id === 'finding-status-select') {
+                const tableSelect = document.querySelector(`.status-select[data-finding-id="${findingId}"]`);
+                if (tableSelect) {
+                    tableSelect.value = newStatus;
+                    tableSelect.setAttribute('data-original-status', newStatus);
+                }
+
+                // Also update the status badge in the modal
+                safelyGetElement("finding-status", el => {
+                    el.textContent = newStatus;
+                    el.className = "status-badge status-" + newStatus.toLowerCase();
+                });
+            }
+
+            // Show success feedback
+            showToast('Status updated successfully', 'success');
+        } else {
+            // Show error message
+            showToast('Failed to update status: ' + (data.message || 'Unknown error'), 'error');
+
+            // Reset to original value
+            const originalStatus = selectElement.getAttribute('data-original-status');
+            if (originalStatus) {
+                selectElement.value = originalStatus;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+        showToast('Error updating status: ' + error.message, 'error');
+
+        // Reset to original value
+        const originalStatus = selectElement.getAttribute('data-original-status');
+        if (originalStatus) {
+            selectElement.value = originalStatus;
+        }
+    })
+    .finally(() => {
+        // Re-enable the select
+        selectElement.disabled = false;
+    });
+}
+
+/**
+ * Displays a toast notification
+ * @param {string} message - Message to display
+ * @param {string} type - Type of notification: 'success', 'error', 'info', 'warning'
+ */
+function showToast(message, type = 'info') {
+    // Create toast element if it doesn't exist
+    let toast = document.getElementById('status-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'status-toast';
+        document.body.appendChild(toast);
+    }
+
+    // Set class based on type
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    // Show toast
+    toast.style.display = 'block';
+
+    // Add animation classes
+    toast.classList.add('toast-show');
+    setTimeout(() => toast.classList.add('toast-fade'), 50);
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('toast-fade');
+        setTimeout(() => {
+            toast.classList.remove('toast-show');
+            toast.style.display = 'none';
+        }, 300);
+    }, 3000);
+}
+
+</script>
+{% endblock %}
