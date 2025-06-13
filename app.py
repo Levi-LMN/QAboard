@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, sen
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from functools import wraps
 from custom_filters import register_filters
@@ -13,6 +14,7 @@ import shutil
 from io import BytesIO
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = 'your-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///qa-tool.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -57,6 +59,13 @@ class Project(db.Model):
     created_date = db.Column(db.DateTime, default=datetime.utcnow)
     categories = db.relationship('Category', backref='project', cascade='all, delete-orphan')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'created_date': self.created_date
+        }
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -841,7 +850,10 @@ def update_finding_status(finding_id):
     db.session.commit()
 
     return jsonify({'success': True, 'message': 'Status updated successfully'})
-
+@app.route('/projects', methods=['GET'])
+def projects():
+    projects = Project.query.all()
+    return jsonify([project.to_dict() for project in projects])
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
